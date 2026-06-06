@@ -42,3 +42,17 @@ func getDiskPaths(vmName string) ([]string, error) {
 
 	return diskPaths, nil
 }
+
+func resolveDiskPath(vmName string, diskIdx int) (string, error) {
+	diskPaths, err := getDiskPaths(vmName)
+	if err != nil {
+		return "", err
+	}
+	if len(diskPaths) == 0 {
+		return "", fmt.Errorf("no disks found for VM %q", vmName)
+	}
+	if diskIdx < 1 || diskIdx > len(diskPaths) {
+		return "", fmt.Errorf("--disk %d out of range (VM %q has %d disk(s))", diskIdx, vmName, len(diskPaths))
+	}
+	return diskPaths[diskIdx-1], nil
+}

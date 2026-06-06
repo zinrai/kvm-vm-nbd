@@ -6,37 +6,36 @@ import (
 	"os"
 )
 
+const usageText = `Usage: kvm-vm-nbd <command> [arguments]
+
+Commands:
+  list     List disks and partitions of a shut-off VM
+  mount    Mount a partition of the VM's disk image
+  umount   Unmount partitions and disconnect an NBD device
+
+Run 'kvm-vm-nbd <command> -h' for command-specific flags.
+`
+
 func main() {
-	log.SetOutput(os.Stdout)
-	log.SetPrefix("VM Disk Mount: ")
+	log.SetFlags(0)
+	log.SetPrefix("kvm-vm-nbd: ")
 
-	for {
-		action := promptForAction()
+	if len(os.Args) < 2 {
+		fmt.Fprint(os.Stderr, usageText)
+		os.Exit(2)
+	}
 
-		switch action {
-		case "connect":
-			vmName := promptForVMName()
-			if vmName == "" {
-				log.Println("No VM selected. Restarting...")
-				continue
-			}
-
-			diskPath := selectDiskImage(vmName)
-			if diskPath == "" {
-				log.Println("No disk image selected. Restarting...")
-				continue
-			}
-
-			if err := connectAndMount(diskPath); err != nil {
-				log.Printf("Error during connect and mount: %v\n", err)
-			}
-		case "disconnect":
-			if err := disconnectAndUnmount(); err != nil {
-				log.Printf("Error during disconnect and unmount: %v\n", err)
-			}
-		case "exit":
-			fmt.Println("Exiting program.")
-			return
-		}
+	switch os.Args[1] {
+	case "list":
+		cmdList(os.Args[2:])
+	case "mount":
+		cmdMount(os.Args[2:])
+	case "umount":
+		cmdUmount(os.Args[2:])
+	case "-h", "--help", "help":
+		fmt.Print(usageText)
+	default:
+		fmt.Fprintf(os.Stderr, "unknown command: %s\n\n%s", os.Args[1], usageText)
+		os.Exit(2)
 	}
 }
