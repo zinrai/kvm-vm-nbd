@@ -32,6 +32,8 @@ func main() {
 		cmdMount(os.Args[2:])
 	case "umount":
 		cmdUmount(os.Args[2:])
+	case "version":
+		printVersion()
 	case "-h", "--help", "help":
 		fmt.Print(usageText)
 	default:
